@@ -42,7 +42,7 @@ Serverless Framework v2.32.0 or later is required.
          - [Enabling / Disabling](#enabling--disabling)
          - [Specify Name and Description](#specify-name-and-description)
          - [Scheduled Events IAM Role](#scheduled-events-iam-role)
-         - [Specify InputTransformer](#specify-inputtransformer)
+         - [Specify Scheduler Options](#specify-scheduler-options)
      - [CloudWatch Event](#cloudwatch-event)
          - [Simple event definition](#simple-event-definition)
          - [Enabling / Disabling](#enabling--disabling-1)
@@ -934,7 +934,7 @@ Clients connecting to this Rest API will then need to set any of these API keys 
 
 ### Schedule
 
-The following config will attach a schedule event and causes the stateMachine `crawl` to be called every 2 hours. The configuration allows you to attach multiple schedules to the same stateMachine. You can either use the `rate` or `cron` syntax. Take a look at the [AWS schedule syntax documentation](http://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html) for more details.
+The following config will attach a schedule event and causes the stateMachine `crawl` to be called every 2 hours. The configuration allows you to attach multiple schedules to the same stateMachine. You can either use the `rate`, `cron`, or `at` syntax. Take a look at the [AWS schedule syntax documentation](https://docs.aws.amazon.com/scheduler/latest/UserGuide/schedule-types.html) for more details.
 
 ```yaml
 stepFunctions:
@@ -995,22 +995,26 @@ events:
       role: arn:aws:iam::xxxxxxxx:role/yourRole
 ```
 
-#### Specify InputTransformer
+#### Specify Scheduler Options
 
-You can specify input values ​​to the Lambda function.
+You can specify several EventBridge Scheduler options for the schedule:
+* start_date: date in UTC after which the schedule will begin
+* end_date: date in UTC on which the schedule will end
+* timezone: timezone for schedule, e.g. `America/New_York`
+* flex_time_window: time in minutes for a flexible start time after rate
+* group_name: name of existing schedule group
+* kms_key_arn: ARN for KMS key used to encrypt/decrypt scheduler data
 
 ```yml
 stepFunctions:
   stateMachines:
     stateMachineScheduled:
       events:
-        - schedule: 
+        - schedule:
             rate: cron(30 12 ? * 1-5 *)
-            inputTransformer:
-              inputPathsMap: 
-                time: '$.time'
-                stage: '$.stageVariables'
-              inputTemplate: '{"time": <time>, "stage" : <stage> }'
+            start_date: 2022-11-30
+            end_date: 2022-12-01
+            timezone: America/New_York
       definition:
         ...
 ```
